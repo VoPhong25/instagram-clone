@@ -10,7 +10,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
     
-   <ChakraProvider>
+   <ChakraProvider resetCSS={false}>
       <App />
     </ChakraProvider>
     </BrowserRouter>

@@ -5,11 +5,13 @@ import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { FaRegComment } from "react-icons/fa";
 import { RiSendPlaneLine } from "react-icons/ri";
 import CommentModal from "../Comment/CommentModal";
+import { useDisclosure } from "@chakra-ui/react";
 
 const PostCard = () => {
     const [showDropDown, setShowDropDown] = useState(false);
     const [isPostLiked, setIsPostLiked] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
+    const {isOpen, onOpen, onClose} = useDisclosure();
 
     const handlePostLike = () => {
         setIsPostLiked(!isPostLiked)
@@ -21,6 +23,10 @@ const PostCard = () => {
 
     const handleClick = () => {
         setShowDropDown(!showDropDown)
+    }
+
+    const handleOpenCommentModal =() => {
+        onOpen()
     }
     return (
         <div>
@@ -48,7 +54,7 @@ const PostCard = () => {
                 <div className="flex justify-between items-center w-full px-5 py-4">
                     <div className="flex items-center space-x-4">
                         {isPostLiked ? <AiFillHeart className="text-2xl hover:opacity-50 cursor-pointer text-red-500" onClick={handlePostLike} /> : <AiOutlineHeart className="text-2xl hover:opacity-50 cursor-pointer" onClick={handlePostLike} />}
-                        <FaRegComment className="text-xl hover:opacity-50 cursor-pointer" />
+                        <FaRegComment onClick={handleOpenCommentModal} className="text-xl hover:opacity-50 cursor-pointer" />
                         <RiSendPlaneLine className="text-xl hover:opacity-50 cursor-pointer" />
                     </div>
                     <div className="cursor-pointer">
@@ -66,7 +72,14 @@ const PostCard = () => {
                     </div>
                 </div>
             </div>
-            <CommentModal/>
+            <CommentModal 
+                handlePostLike={handlePostLike}
+                onClose={onClose}
+                isOpen={isOpen} 
+                handlePostSave={handlePostSave}
+                isPostLiked={isPostLiked}
+                isSaved={isSaved}
+            />
         </div>
     )
 }
