@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import './ProgressCard.css';
+import './Progressbar.css';
 
-const ProgressCard = (index, activeIndex, duration) => {
+const Progressbar = ({index, activeIndex, duration}) => {
 
     const [progress, setProgress] = useState(0);
 
@@ -13,7 +13,7 @@ const ProgressCard = (index, activeIndex, duration) => {
                 }
                 clearInterval(interval)
                 return prevProgress;
-            })
+            });
         }, duration / 100);
         return () => {
             clearInterval(interval)
@@ -28,12 +28,14 @@ const ProgressCard = (index, activeIndex, duration) => {
 
     const isActive = index === activeIndex;
     return (
-        <div>
-            <div className={`${isActive ? "progress-bar" : ""}`} style={{ width: `${progress}%` }}>
-
+        <div className={`progress-bar-container ${isActive? "active":""}`}>
+            
+            <div 
+            className={`${isActive ? "progress-bar" : ""}`} 
+            style={{ width: `${progress}%` }}>
             </div>
         </div>
     )
 }
 
-export default ProgressCard
+export default Progressbar
