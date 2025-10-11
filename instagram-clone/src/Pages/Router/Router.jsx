@@ -10,7 +10,7 @@ const Router = () => {
     <div>
     <div className="flex">
       {/* Sidebar cố định độ rộng, không co; vạch ngăn ở MÉP PHẢI */}
-      <aside className="w-70 shrink-0 border-r border-slate-200">
+      <aside className="w-90 shrink-0 border-r border-slate-200">
         <Sidebar />
       </aside>
 
