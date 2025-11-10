@@ -6,10 +6,12 @@ import com.example.tieuluan_api.dto.response.UserCreateResponse;
 import com.example.tieuluan_api.dto.response.UserUpdateResponse;
 import com.example.tieuluan_api.entity.User;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
+    @Mapping(target = "password", ignore = true)
     User toUser(UserCreateReq request);
     UserCreateResponse toUserCreateResponse(User user);
     UserUpdateResponse toUserUpdateResponse(User user);

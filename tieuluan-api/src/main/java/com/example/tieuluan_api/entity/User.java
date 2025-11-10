@@ -1,5 +1,6 @@
 package com.example.tieuluan_api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,13 +14,16 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
-@ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)   // chỉ dựa trên id
+@ToString(onlyExplicitlyIncluded = true)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Integer id;
 
+    @ToString.Include
     private String username;
     private String fullname;
     private String email;
@@ -30,17 +34,19 @@ public class User {
     private String image;
     private String password;
     // Những người theo dõi TÔI
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
             name = "user_follow",
             joinColumns = @JoinColumn(name = "following_id"),
             inverseJoinColumns = @JoinColumn(name = "follower_id")
     )
-    private Set<User> followers = new HashSet<>();
+    private Set<User> following = new HashSet<>();
 
     // Những người TÔI đang theo dõi
-    @ManyToMany(mappedBy = "followers")
-    private Set<User> following = new HashSet<>();
+    @JsonIgnore
+    @ManyToMany(mappedBy = "following")
+    private Set<User> followers = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Story> stories = new ArrayList<>();
