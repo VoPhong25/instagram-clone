@@ -3,7 +3,10 @@ package com.example.tieuluan_api.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +36,12 @@ public class User {
     private String gender;
     private String image;
     private String password;
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts = new ArrayList<>();
     // Những người theo dõi TÔI
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     @ManyToMany
     @JoinTable(
@@ -44,13 +52,14 @@ public class User {
     private Set<User> following = new HashSet<>();
 
     // Những người TÔI đang theo dõi
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     @ManyToMany(mappedBy = "following")
     private Set<User> followers = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Story> stories = new ArrayList<>();
-
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @ManyToMany
     @JoinTable(
             name = "saved_posts",
@@ -59,15 +68,16 @@ public class User {
     )
     private List<Post> savePost = new ArrayList<>();
 
-    public boolean follow(User target) {
-        boolean added = this.following.add(target);
-        if (added) target.followers.add(this);
-        return added;
-    }
 
-    public boolean unfollow(User target) {
-        boolean removed = this.following.remove(target);
-        if (removed) target.followers.remove(this);
-        return removed;
-    }
+//    public boolean follow(User target) {
+//        boolean added = this.following.add(target);
+//        if (added) target.followers.add(this);
+//        return added;
+//    }
+//
+//    public boolean unfollow(User target) {
+//        boolean removed = this.following.remove(target);
+//        if (removed) target.followers.remove(this);
+//        return removed;
+//    }
 }

@@ -33,11 +33,11 @@ public class JwtProvider { //Provide jwt token from email and role(optional)
     public String getEmailFromToken(String jwt) {
         jwt=jwt.substring(7);
         Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(jwt).getBody();
-
-        String username = String.valueOf(claims.get("username"));
-        return username;
+        String email = String.valueOf(claims.get("username"));
+        return email;
     }
     public boolean validateToken(String jwt) {
+        jwt=jwt.substring(7);
         try {
             Jwts.parser().setSigningKey(key).build().parseClaimsJws(jwt);
             return true; //  hợp lệ và chưa hết hạn
@@ -51,7 +51,9 @@ public class JwtProvider { //Provide jwt token from email and role(optional)
 
     public static void main(String[] args) {
         JwtProvider jwtProvider = new JwtProvider();
-        System.out.println(jwtProvider.validateToken("eyJhbGciOiIUzUxMiJ9.eyJpYXQiOjE3NjI3NjY4MTcsImV4cCI6MTc2Mjg1MzIxNywidXNlcm5hbWUiOiJ2b3Bob25nZ0BnbWFpbCxjb20iLCJhdXRob3JpdGllcyI6IiJ9.yVMBHGgr4hJ76leNwSB5RFrwPdRXHSo6mtDjUc48o6hwAyRApMphD0_nO4mMfO1M4oPXadjIekXCZb7HcCqpmw"));
+        System.out.println(jwtProvider.validateToken("eyJhbGciOiJIUzUxMiJ9.eyJpYXQiOjE3NjI3NzI3NjEsImV4cCI6MTc2Mjg1OTE2MSwidXNlcm5hbWUiOiJ2b3Bob25nZ0BnbWFpbCxjb20iLCJhdXRob3JpdGllcyI6IiJ9.RC5PqMT1GTICvn7wvSaDAYm_JaWv55RbJbWCxDw1KMunnxBqD88cNMgRdxPPBjG4j_XyohdquofD6pTOVh_Idg"));
+        System.out.println(jwtProvider.getEmailFromToken("eyJhbGciOiJIUzUxMiJ9.eyJpYXQiOjE3NjI3NzI3NjEsImV4cCI6MTc2Mjg1OTE2MSwidXNlcm5hbWUiOiJ2b3Bob25nZ0BnbWFpbCxjb20iLCJhdXRob3JpdGllcyI6IiJ9.RC5PqMT1GTICvn7wvSaDAYm_JaWv55RbJbWCxDw1KMunnxBqD88cNMgRdxPPBjG4j_XyohdquofD6pTOVh_Idg"));
+
     }
 
 }

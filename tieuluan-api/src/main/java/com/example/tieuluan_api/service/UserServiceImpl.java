@@ -1,8 +1,8 @@
 package com.example.tieuluan_api.service;
 
-import com.example.tieuluan_api.dto.request.UserCreateReq;
+
+import com.example.tieuluan_api.config.JwtProvider;
 import com.example.tieuluan_api.dto.request.UserUpdateReq;
-import com.example.tieuluan_api.dto.response.UserCreateResponse;
 import com.example.tieuluan_api.dto.response.UserFollowResponse;
 import com.example.tieuluan_api.dto.response.UserUpdateResponse;
 import com.example.tieuluan_api.entity.User;
@@ -19,62 +19,50 @@ import java.util.*;
 
 @Service
 public
-class UserServiceImpl implements IUserService{
+class UserServiceImpl implements IUserService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private JwtProvider jwtProvider;
 
     @Override
     public User findUserById(Integer userId) throws UserException {
         Optional<User> user = userRepository.findById(userId);
-        if(user.isPresent()){
-           return user.get();
+        if (user.isPresent()) {
+            return user.get();
         }
         throw new UserException("User not exist with id " + userId);
     }
 
     @Override
     public User findUserProfile(String token) throws UserException {
-        return null;
+        String email = jwtProvider.getEmailFromToken(token);
+        Optional<User> opt = userRepository.findByEmail(email);
+        if (opt.isPresent()) {
+            return opt.get();
+        }
+        throw new UserException("Invalid token.......");
     }
 
     @Override
     public User findUserByUsername(String username) throws UserException {
-        return null;
+        Optional<User> user = userRepository.findByUsername(username);
+        if(user.isPresent()){
+           return user.get();
+        }
+        throw new UserException("User not found with username: " + username);
     }
 
     @Override
     public String followUser(Integer reqUserId, Integer followUserId) throws UserException {
+        //kiem tra dau vao
         if (reqUserId == null || followUserId == null) {
-            throw new UserException("Thiếu id người dùng.");
+            throw new UserException("Missing user id");
         }
         if (reqUserId.equals(followUserId)) {
-            throw new UserException("Bạn không thể tự theo dõi chính mình.");
-        }
-
-        User me = userRepository.findById(reqUserId)
-                .orElseThrow(() -> new UserException("User with id=" + reqUserId + " not found"));
-        User target = userRepository.findById(followUserId)
-                .orElseThrow(() -> new UserException("User with id=" + followUserId + " not found") );
-        if(me.getFollowing().contains(target) || target.getFollowers().contains(me)){
-            throw new UserException("You had follow this accout");
-        }
-        me.getFollowing().add(target);   // dong bo 2 chieu
-        target.getFollowers().add(me);
-
-        userRepository.save(me);
-        userRepository.save(target);
-        return "You have followed " + target.getUsername();
-    }
-
-    @Override
-    public String unFollowUser(Integer reqUserId, Integer followUserId) throws UserException {
-        if (reqUserId == null || followUserId == null) {
-            throw new UserException("Thiếu id người dùng.");
-        }
-        if (reqUserId.equals(followUserId)) {
-            throw new UserException("Không hợp lệ.");
+            throw new UserException("You can't follow youself.");
         }
 
         User me = userRepository.findById(reqUserId)
@@ -82,43 +70,46 @@ class UserServiceImpl implements IUserService{
         User target = userRepository.findById(followUserId)
                 .orElseThrow(() -> new UserException("User with id=" + followUserId + " not found"));
 
-        if(!me.getFollowing().contains(target) || !target.getFollowers().contains(me)){
-            throw new UserException("You don't follow this accout");
+        // kiem tra da follow chua
+        boolean isFollowing = me.getFollowing().contains(target);
+
+        if (isFollowing) {
+            // neu da follow thi un
+            me.getFollowing().remove(target);
+            target.getFollowers().remove(me);
+            userRepository.save(me);
+            userRepository.save(target);
+            return "You have unfollowed " + target.getUsername();
+        } else {
+            // neu chua follow thi follow
+            me.getFollowing().add(target);
+            target.getFollowers().add(me);
+            userRepository.save(me);
+            userRepository.save(target);
+
+            return "You have followed " + target.getUsername();
         }
-
-        me.getFollowing().remove(target);
-        target.getFollowers().remove(me);
-
-
-         userRepository.save(me);
-         userRepository.save(target);
-
-        return "You have unfollowed " + target.getUsername();
     }
 
     @Override
     public List<User> findUsersByIds(List<Integer> userId) throws UserException {
-       List<User> users = userRepository.findAllUsersByUserIds(userId);
-       return users;
+        List<User> users = userRepository.findAllUsersByUserIds(userId);
+        return users;
     }
 
     @Override
     public List<User> searchUsers(String query) throws UserException {
-      List<User> users = userRepository.findByQuery(query);
-      if(users.size()==0){
-          throw new UserException("User not found");
-      }
-      return users;
+        List<User> users = userRepository.findByQuery(query);
+        if (users.size() == 0) {
+            throw new UserException("User not found");
+        }
+        return users;
     }
 
     @Override
-    public UserUpdateResponse updateUserDetails(Integer targetUserId, Integer currentUserId, UserUpdateReq req) throws UserException {
-        User user = userRepository.findById(targetUserId).orElseThrow(() -> new UserException("User not found"));
-        if(!targetUserId.equals(currentUserId)) {
-            throw new UserException("You can't update this user");
-        }
+    public UserUpdateResponse updateUserDetails(Integer userReq, UserUpdateReq req) throws UserException {
+        User user = userRepository.findById(userReq).orElseThrow(() -> new UserException("User not found"));
         userMapper.updateUser(user, req);
-
         return userMapper.toUserUpdateResponse(userRepository.save(user));
     }
 

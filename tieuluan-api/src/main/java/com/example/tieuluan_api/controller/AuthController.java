@@ -1,6 +1,7 @@
 package com.example.tieuluan_api.controller;
 
 import com.example.tieuluan_api.config.JwtProvider;
+import com.example.tieuluan_api.dto.UserDTO;
 import com.example.tieuluan_api.dto.request.UserCreateReq;
 import com.example.tieuluan_api.dto.response.AuthResponse;
 import com.example.tieuluan_api.dto.response.UserCreateResponse;
@@ -32,8 +33,6 @@ import java.util.Optional;
 @RequestMapping("/api/auth")
 public class AuthController {
     @Autowired
-    private UserServiceImpl userService;
-    @Autowired
     private UserRepository userRepository;
     @Autowired
     private UserMapper userMapper;
@@ -45,7 +44,7 @@ public class AuthController {
     private CustomUserDetailServiceImp customUserDetailServiceImp;
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> registerUser(@RequestBody UserCreateReq req) throws UserException {
+    public ResponseEntity<UserDTO> registerUser(@RequestBody User req) throws UserException {
         if (req.getEmail() == null || req.getPassword() == null || req.getFullname() == null) {
             throw new UserException("All filds are required");
         }
@@ -62,7 +61,8 @@ public class AuthController {
             throw new UserException("All filds are required");
         }
 
-        User newUser = userMapper.toUser(req);
+        User newUser = req;
+        UserDTO userDTO = UserMapper.toUserDTO(req,req);
         newUser.setPassword(passwordEncoder.encode(req.getPassword()));
         userRepository.save(newUser);
         //Create auth spring security first and send it to SecurityContextHolder to handle it.
@@ -74,11 +74,11 @@ public class AuthController {
 
         AuthResponse authResponse = new AuthResponse(token, true);
 
-        return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
+        return new ResponseEntity<>(userDTO, HttpStatus.CREATED);
     }
     @PostMapping("/signin")
     public ResponseEntity<AuthResponse> signIn(@RequestBody User user) throws UserException {
-        String username = user.getUsername();
+        String username = user.getEmail();
         String password = user.getPassword();
         //Validate the username and password then return to spring security auth to create jwt token
         Authentication authentication = authenticate(username, password);
@@ -88,7 +88,7 @@ public class AuthController {
 
         AuthResponse authResponse = new AuthResponse(token, true);
         //Return token to client for validate further
-        return new ResponseEntity<AuthResponse>(authResponse, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(authResponse, HttpStatus.ACCEPTED);
     }
 
     private Authentication authenticate(String username, String password) {

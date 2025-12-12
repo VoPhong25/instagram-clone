@@ -21,10 +21,9 @@ public interface IUserService {
     public User findUserProfile(String token) throws UserException;
     public User findUserByUsername(String username) throws UserException;
     public  String followUser(Integer reqUserId, Integer followUserId) throws UserException;
-    public String unFollowUser(Integer reqUserId, Integer followUserId) throws UserException;
     public List<User> findUsersByIds(List<Integer> userId) throws UserException;
     public List<User> searchUsers(String query) throws UserException;
-    public UserUpdateResponse updateUserDetails(Integer targetUserId, Integer currentUserId, UserUpdateReq req) throws UserException;
+    public UserUpdateResponse updateUserDetails(Integer userReq, UserUpdateReq req) throws UserException;
 
     public Page<UserFollowResponse> findFollowersOf(Integer id, Pageable pageable);
 

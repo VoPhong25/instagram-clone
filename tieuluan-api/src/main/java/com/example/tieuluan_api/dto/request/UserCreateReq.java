@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserCreateReq {
     private String password;
-    private String mobile;
     private String username;
     private String email;
     private String fullname;
