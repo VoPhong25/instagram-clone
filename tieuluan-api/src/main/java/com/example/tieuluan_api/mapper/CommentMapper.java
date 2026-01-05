@@ -19,7 +19,7 @@ public interface CommentMapper {
         dto.setCreatedAt(comment.getCreatedAt());
         dto.setTotalLikes(comment.getLikeByUser().size());
         dto.setLiked(CommentUtil.isLikedByReqUser(reqUser, comment));
-        dto.setUserId(comment.getUser().getId());
+        dto.setUserMiniDTO(UserMapper.toUserFollowDTO(comment.getUser()));
         dto.setPostId(comment.getPost().getId());
 
         return dto;

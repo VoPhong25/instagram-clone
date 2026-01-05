@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserUpdateReq {
-    private String password;
     private String username;
     private String fullname;
     private String email;

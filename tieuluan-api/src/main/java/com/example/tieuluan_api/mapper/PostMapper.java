@@ -60,13 +60,44 @@ public interface PostMapper {
                 .map(p -> PostMapper.toPostDTO(p, reqUser))
                 .collect(Collectors.toList());
     }
-    static PostMiniDTO toPostMiniDTO(Post post) {
-        if (post == null) return null;
+    default List<PostMiniDTO> toDtoMiniList(List<Post> posts, User reqUser) {
+        if (posts == null || posts.isEmpty()) return Collections.emptyList();
+        return posts.stream()
+                .filter(Objects::nonNull)
+                .map(p -> PostMapper.toPostMiniDTO(p, reqUser))
+                .collect(Collectors.toList());
+    }
+    static PostMiniDTO toPostMiniDTO(Post post, User reqUser) {
+            if (post == null) return null;
 
         PostMiniDTO dto = new PostMiniDTO();
-        dto.setId(post.getId());
-        dto.setImage(post.getImage());
-        return dto;
-    }
+            dto.setId(post.getId());
+            dto.setImage(post.getImage());
+            dto.setCaption(post.getCaption());
+            dto.setLocation(post.getLocation());
+            dto.setCreatedAt(post.getCreatedAt());
+
+            // null-safe: nếu likes là null -> 0
+            int totalLike = post.getLikes() == null ? 0 : post.getLikes().size();
+            int totalComment = post.getComment() == null ? 0 : post.getComment().size();
+            dto.setTotalLike(totalLike);
+            dto.setTotalComment(totalComment);
+
+            // Kiểm tra user có like hay không (PostUtil nên null-safe)
+            dto.setLiked(PostUtil.isLikedByReqUser(reqUser, post));
+            dto.setSaved(PostUtil.isSavedByReqUser(reqUser, post));
+
+            // CommentDTO (giả sử CommentMapper.toCommentDTO là static và null-safe)
+            dto.setComments(
+                    post.getComment() == null
+                            ? Collections.emptyList()
+                            : post.getComment().stream()
+                            .filter(Objects::nonNull)
+                            .map(c -> CommentMapper.toCommentDTO(c, reqUser))
+                            .collect(Collectors.toList())
+            );
+
+            return dto;
+        }
 
 }

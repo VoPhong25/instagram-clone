@@ -1,12 +1,14 @@
 package com.example.tieuluan_api.mapper;
 
 import com.example.tieuluan_api.dto.UserDTO;
+import com.example.tieuluan_api.dto.UserMessageDTO;
 import com.example.tieuluan_api.dto.UserMiniDTO;
 import com.example.tieuluan_api.dto.request.UserCreateReq;
 import com.example.tieuluan_api.dto.request.UserUpdateReq;
 import com.example.tieuluan_api.dto.response.UserCreateResponse;
 import com.example.tieuluan_api.dto.response.UserUpdateResponse;
 import com.example.tieuluan_api.entity.Post;
+import com.example.tieuluan_api.entity.Story;
 import com.example.tieuluan_api.entity.User;
 import org.mapstruct.*;
 
@@ -70,7 +72,7 @@ public interface UserMapper {
             dto.setSavePost(
                     savePost.stream()
                             .filter(Objects::nonNull)
-                            .map(Post::getId)
+                            .map(p -> PostMapper.toPostMiniDTO(p, reqUser))
                             .collect(Collectors.toList())
             );
         }
@@ -81,7 +83,20 @@ public interface UserMapper {
         } else {
             dto.setPosts(
                     posts.stream()
-                            .map(PostMapper::toPostMiniDTO)
+                            .filter(Objects::nonNull)
+                            .map(p-> PostMapper.toPostMiniDTO(p, reqUser))
+                            .collect(Collectors.toList())
+            );
+
+        }
+        List<Story> stories = user.getStories();
+        if (stories == null || stories.isEmpty()) {
+            dto.setStories(Collections.emptyList());
+        } else {
+            dto.setStories(
+                    stories.stream()
+                            .filter(Objects::nonNull)
+                            .map(s-> StoryMapper.toDTO(s, reqUser))
                             .collect(Collectors.toList())
             );
 
@@ -100,6 +115,57 @@ public interface UserMapper {
 
         return dto;
     }
+    static UserMessageDTO toUserMessageDTO(User user, User reqUser) {
+        if (user == null) return null;
+
+        UserMessageDTO dto = new UserMessageDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setFullname(user.getFullname());
+        dto.setEmail(user.getEmail());
+        dto.setMobile(user.getMobile());
+        dto.setWebsite(user.getWebsite());
+        dto.setBio(user.getBio());
+        dto.setGender(user.getGender());
+        dto.setImage(user.getImage());
+        dto.setCreatedAt(user.getCreatedAt());
+
+        // followers
+        Set<User> followers = user.getFollowers();
+        if (followers == null || followers.isEmpty()) {
+            dto.setFollowers(Collections.emptySet());
+        } else {
+            dto.setFollowers(
+                    followers.stream()
+                            .filter(Objects::nonNull)
+                            .map(UserMapper::toUserFollowDTO)
+                            .collect(Collectors.toSet())
+            );
+        }
+
+        // following
+        Set<User> following = user.getFollowing();
+        if (following == null || following.isEmpty()) {
+            dto.setFollowing(Collections.emptySet());
+        } else {
+            dto.setFollowing(
+                    following.stream()
+                            .filter(Objects::nonNull)
+                            .map(UserMapper::toUserFollowDTO)
+                            .collect(Collectors.toSet())
+            );
+        }
+        boolean isFollowed = false;
+        if (reqUser != null && reqUser.getId() != null && followers != null) {
+            isFollowed = followers.stream()
+                    .map(User::getId)
+                    .filter(Objects::nonNull)
+                    .anyMatch(id -> id.equals(reqUser.getId()));
+        }
+        dto.setFollowed(isFollowed);
+
+        return dto;}
+
 
     static UserMiniDTO toUserFollowDTO(User user) {
         if (user == null) return null;

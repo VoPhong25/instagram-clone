@@ -38,4 +38,19 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("select count(f) from User u join u.following f where u.id = :id")
     long countFollowingOf(@Param("id") Integer id);
 
+    @Query("""
+        SELECT u
+        FROM User u
+        WHERE u.id <> :meId
+        AND u NOT IN (
+            SELECT f FROM User me
+            JOIN me.followers f
+            WHERE me.id = :meId
+        )
+        ORDER BY SIZE(u.followers) DESC
+    """)
+    public List<User> findPopularUsers(
+            @Param("meId") Integer meId,
+            Pageable pageable
+    );
 }

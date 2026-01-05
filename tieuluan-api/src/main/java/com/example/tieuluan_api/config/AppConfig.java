@@ -26,8 +26,16 @@ public class AppConfig {
                 .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers("/api/user/**").authenticated()
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/user/**",
+                                "/api/story/**",
+                                "/api/comment/**",
+                                "/api/post/**",
+                                "/api/messages/**"
+                        ).authenticated()
+                        .requestMatchers("/api/auth/**",
+                                "/ws/**"
+                                ).permitAll()
                         .anyRequest().permitAll()
                 ).sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).
                 addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class);

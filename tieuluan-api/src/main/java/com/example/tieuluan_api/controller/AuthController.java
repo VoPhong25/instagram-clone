@@ -90,6 +90,11 @@ public class AuthController {
         //Return token to client for validate further
         return new ResponseEntity<>(authResponse, HttpStatus.ACCEPTED);
     }
+    @GetMapping("validateToken")
+    public ResponseEntity<?> vaidateToken(@RequestHeader("Authorization") String token){
+        boolean validate = jwtProvider.validateToken(token);
+        return new ResponseEntity<>(validate,HttpStatus.OK);
+    }
 
     private Authentication authenticate(String username, String password) {
         UserDetails userDetails = customUserDetailServiceImp.loadUserByUsername(username);

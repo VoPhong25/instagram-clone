@@ -11,6 +11,7 @@ import com.example.tieuluan_api.mapper.UserMapper;
 import com.example.tieuluan_api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,14 +50,14 @@ class UserServiceImpl implements IUserService {
     @Override
     public User findUserByUsername(String username) throws UserException {
         Optional<User> user = userRepository.findByUsername(username);
-        if(user.isPresent()){
-           return user.get();
+        if (user.isPresent()) {
+            return user.get();
         }
         throw new UserException("User not found with username: " + username);
     }
 
     @Override
-    public String followUser(Integer reqUserId, Integer followUserId) throws UserException {
+    public User followUser(Integer reqUserId, Integer followUserId) throws UserException {
         //kiem tra dau vao
         if (reqUserId == null || followUserId == null) {
             throw new UserException("Missing user id");
@@ -79,7 +80,7 @@ class UserServiceImpl implements IUserService {
             target.getFollowers().remove(me);
             userRepository.save(me);
             userRepository.save(target);
-            return "You have unfollowed " + target.getUsername();
+            return target;
         } else {
             // neu chua follow thi follow
             me.getFollowing().add(target);
@@ -87,7 +88,7 @@ class UserServiceImpl implements IUserService {
             userRepository.save(me);
             userRepository.save(target);
 
-            return "You have followed " + target.getUsername();
+            return target;
         }
     }
 
@@ -100,18 +101,47 @@ class UserServiceImpl implements IUserService {
     @Override
     public List<User> searchUsers(String query) throws UserException {
         List<User> users = userRepository.findByQuery(query);
-        if (users.size() == 0) {
-            throw new UserException("User not found");
-        }
         return users;
     }
 
     @Override
     public UserUpdateResponse updateUserDetails(Integer userReq, UserUpdateReq req) throws UserException {
         User user = userRepository.findById(userReq).orElseThrow(() -> new UserException("User not found"));
-        userMapper.updateUser(user, req);
+        if (req.getUsername() != null) {
+            User existUser = findUserByUsername(req.getUsername());
+            if (existUser != null && !existUser.getId().equals(userReq)) {
+                throw new UserException("Username { " + req.getUsername() + " } already exists");
+            }
+        }
+        if (req.getEmail() != null) {
+            Optional<User> existEmail = userRepository.findByEmail(req.getEmail());
+            if (existEmail.isPresent() && !existEmail.get().getId().equals(userReq)) {
+                throw new UserException("Email { " + req.getEmail() + " } already exists");
+            }
+        }
+
+        if (req.getFullname() != null) user.setFullname(req.getFullname());
+        if (req.getUsername() != null) user.setUsername(req.getUsername());
+        if (req.getEmail() != null) user.setEmail(req.getEmail());
+        if (req.getBio() != null) user.setBio(req.getBio());
+        if (req.getMobile() != null) user.setMobile(req.getMobile());
+        if (req.getGender() != null) user.setGender(req.getGender());
+        if (req.getWebsite() != null) user.setWebsite(req.getWebsite());
+        if (req.getImage() != null) user.setImage(req.getImage());
         return userMapper.toUserUpdateResponse(userRepository.save(user));
     }
+
+    @Override
+    public String removeAvt(Integer userId) throws UserException {
+        User userReq = findUserById(userId);
+        if (userReq != null) {
+            userReq.setImage(null);
+            userRepository.save(userReq);
+            return "Remove avatar sucessfully!";
+        }
+        throw new UserException("You can't delete other user avatar");
+    }
+
 
     @Override
     public Page<UserFollowResponse> findFollowersOf(Integer id, Pageable pageable) {
@@ -132,5 +162,14 @@ class UserServiceImpl implements IUserService {
         return Map.of("followers", followers, "following", following);
     }
 
+    @Override
+    public List<User> findPopularUsers(Integer meId) {
+        List<User> users = userRepository.findPopularUsers(
+                meId,
+                PageRequest.of(0, 6)
+        );
 
+        return users;
+    }
 }
+

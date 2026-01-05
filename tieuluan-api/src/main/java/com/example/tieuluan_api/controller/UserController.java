@@ -11,6 +11,7 @@ import com.example.tieuluan_api.mapper.UserMapper;
 import com.example.tieuluan_api.service.IUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -20,12 +21,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/user")
 public class UserController {
-    private final IUserService userService;
+    @Autowired
+    private IUserService userService;
 
     @GetMapping("/find/{userId}")
     public ResponseEntity<UserDTO> findUserById(@PathVariable Integer userId, @RequestHeader("Authorization") String token) throws UserException {
@@ -42,11 +45,11 @@ public class UserController {
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
     @PostMapping("/follow/{followUserId}")
-    public ResponseEntity<MessageResponse> follow(@PathVariable Integer followUserId,@RequestHeader("Authorization") String token) throws UserException {
+    public ResponseEntity<UserDTO> follow(@PathVariable Integer followUserId,@RequestHeader("Authorization") String token) throws UserException {
         User userReq = userService.findUserProfile(token);
-        String message= userService.followUser(userReq.getId(), followUserId);
-        MessageResponse messageResponse = new MessageResponse(message);
-        return new ResponseEntity<>(messageResponse, HttpStatus.OK);
+        User user = userService.followUser(userReq.getId(), followUserId);
+        UserDTO userDTO = UserMapper.toUserDTO(user, userReq);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
     @GetMapping("/profile")
@@ -56,9 +59,27 @@ public class UserController {
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
-    @GetMapping("/{userIds}")
-    public ResponseEntity<List<UserDTO>> findUsersByIds(@PathVariable List<Integer> userIds, @RequestHeader("Authorization") String token) throws UserException {
+    @GetMapping("/popular")
+    public ResponseEntity<List<UserDTO>> findPopularUsers(@RequestHeader("Authorization") String token) throws UserException {
         User user = userService.findUserProfile(token);
+        List<User> users = userService.findPopularUsers(user.getId());
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (User u : users) {
+            UserDTO userDTO = UserMapper.toUserDTO(u, user);
+            userDTOS.add(userDTO);
+        }
+        return new ResponseEntity<>(userDTOS, HttpStatus.OK);
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<List<UserDTO>> findUsersByIds(@RequestHeader("Authorization") String token) throws UserException {
+        User user = userService.findUserProfile(token);
+        List<Integer> userIds = new ArrayList<>();
+        userIds.add(user.getId());
+        Set<User> followings = user.getFollowing();
+        for (User following : followings) {
+            userIds.add(following.getId());
+        }
         List<User> users = userService.findUsersByIds(userIds);
         List<UserDTO> userDTOS = new ArrayList<>();
         for (User u : users) {
@@ -88,6 +109,12 @@ public class UserController {
         UserUpdateResponse res =
                 userService.updateUserDetails(user.getId(), req);
         return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+    @PutMapping("/account/removeAvt")
+    public ResponseEntity<MessageResponse> removeAvtUser(@RequestHeader("Authorization") String token) throws UserException {
+            User user = userService.findUserProfile(token);
+        MessageResponse response = new MessageResponse(userService.removeAvt(user.getId()));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     // get list followers

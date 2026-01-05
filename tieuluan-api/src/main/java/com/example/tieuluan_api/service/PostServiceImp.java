@@ -49,6 +49,7 @@ public class PostServiceImp implements IPostService{
             for (User u : post.getSavedByUsers()) {
                 u.getSavePost().remove(post);
             }
+            postRepository.deleteByPostId(postId);
             postRepository.delete(post);
             return "Post successfully deleted!";
         }
@@ -58,9 +59,6 @@ public class PostServiceImp implements IPostService{
     @Override
     public List<Post> findPostByUserId(Integer userId) throws UserException {
         List<Post> posts = postRepository.findByUserId(userId);
-        if(posts.size()==0){
-            throw new UserException("This user does not have any post");
-        }
         return posts;
     }
 

@@ -16,6 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/comment")
 public class CommentController {
@@ -46,6 +49,20 @@ public class CommentController {
         String deleted = commentService.deleteComment(commentId, user.getId());
         MessageResponse messageResponse = new MessageResponse(deleted);
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/comments/{postId}")
+    public ResponseEntity<List<CommentDTO>> findCommentsByPostId(@PathVariable Integer postId, @RequestHeader("Authorization") String token) throws UserException, PostException, CommentException {
+        User user = userService.findUserProfile(token);
+        List<Comment> commentList = commentService.findCommentsByPostId(postId);
+        List<CommentDTO> commentDTOS = new ArrayList<>();
+        for (Comment c: commentList
+             ) {
+            commentDTOS.add(CommentMapper.toCommentDTO(c, user));
+
+        }
+        return new ResponseEntity<>(commentDTOS, HttpStatus.OK);
+
     }
     @PutMapping("/update/{commentId}")
     public ResponseEntity<CommentDTO> updateComment(@PathVariable Integer commentId, @RequestBody Comment req, @RequestHeader("Authorization") String token) throws UserException, CommentException {

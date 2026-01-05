@@ -1,6 +1,7 @@
 package com.example.tieuluan_api.controller;
 
 import com.example.tieuluan_api.dto.PostDTO;
+import com.example.tieuluan_api.dto.PostMiniDTO;
 import com.example.tieuluan_api.dto.response.MessageResponse;
 import com.example.tieuluan_api.entity.Post;
 import com.example.tieuluan_api.entity.User;
@@ -9,18 +10,16 @@ import com.example.tieuluan_api.exception.UserException;
 import com.example.tieuluan_api.mapper.PostMapper;
 import com.example.tieuluan_api.service.IPostService;
 import com.example.tieuluan_api.service.IUserService;
-import com.example.tieuluan_api.util.SecurityUtils;
-import com.example.tieuluan_api.service.PostServiceImp;
-import com.example.tieuluan_api.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -50,16 +49,22 @@ public class PostController {
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
     @GetMapping("/all/{userId}")
-    public ResponseEntity<List<PostDTO>> findPostByUserId( @PathVariable Integer userId, @RequestHeader("Authorization") String token) throws UserException{
+    public ResponseEntity<List<PostMiniDTO>> findPostByUserId(@PathVariable Integer userId, @RequestHeader("Authorization") String token) throws UserException{
         User user = userService.findUserProfile(token);
          List<Post> posts = postService.findPostByUserId(userId);
-         List<PostDTO> postDTOS = postMapper.toDtoList(posts, user);
+         List<PostMiniDTO> postDTOS = postMapper.toDtoMiniList(posts, user);
          return new ResponseEntity<>(postDTOS, HttpStatus.OK);
     }
     @GetMapping("/following")
-    public ResponseEntity<List<PostDTO>> findAllPostByUserIds( @RequestParam List<Integer> userIds, @RequestHeader("Authorization") String token) throws UserException, PostException {
+    public ResponseEntity<List<PostDTO>> findAllPostByUserIds(@RequestHeader("Authorization") String token) throws UserException, PostException {
         User user = userService.findUserProfile(token);
+        List<Integer> userIds = new ArrayList<>();
         userIds.add(user.getId());
+
+        Set<User> followings = user.getFollowing();
+        for (User following : followings) {
+            userIds.add(following.getId());
+        }
         List<Post> posts = postService.findAllPostByUserIds(userIds);
         List<PostDTO> postDTOS = postMapper.toDtoList(posts, user);
         return new ResponseEntity<>(postDTOS, HttpStatus.OK);

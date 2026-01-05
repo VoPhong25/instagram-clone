@@ -23,7 +23,7 @@ public class JwtProvider { //Provide jwt token from email and role(optional)
         String jwt= Jwts.builder()
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(new Date().getTime()+86400000))
-                .claim("username",auth.getName())
+                .claim("email",auth.getName())
                 .claim("authorities", authorities)
                 .signWith(key)
                 .compact();
@@ -33,7 +33,7 @@ public class JwtProvider { //Provide jwt token from email and role(optional)
     public String getEmailFromToken(String jwt) {
         jwt=jwt.substring(7);
         Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(jwt).getBody();
-        String email = String.valueOf(claims.get("username"));
+        String email = String.valueOf(claims.get("email"));
         return email;
     }
     public boolean validateToken(String jwt) {

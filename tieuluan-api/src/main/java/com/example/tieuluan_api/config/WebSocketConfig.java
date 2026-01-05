@@ -24,43 +24,68 @@ import javax.crypto.SecretKey;
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic","/queue");
+        config.enableSimpleBroker("/topic", "/queue");
         config.setApplicationDestinationPrefixes("/app");
         config.setUserDestinationPrefix("/user");
     }
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
+        registry.addEndpoint("/ws")
+                .setAllowedOriginPatterns("*");
     }
+
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
+
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor =
                         MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-                if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
 
+                if (accessor == null) return message;
+
+                System.out.println("STOMP command = " + accessor.getCommand());
+
+                if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String rawToken = accessor.getFirstNativeHeader(JwtConstant.JWT_HEADER);
+
                     if (rawToken != null && rawToken.startsWith("Bearer ")) {
                         try {
                             String token = rawToken.substring(7);
-                            SecretKey key = Keys.hmacShaKeyFor(JwtConstant.SECRET_KEY.getBytes());
+
+                            SecretKey key = Keys.hmacShaKeyFor(
+                                    JwtConstant.SECRET_KEY.getBytes()
+                            );
+
                             Claims claims = Jwts.parser()
                                     .setSigningKey(key)
                                     .build()
                                     .parseClaimsJws(token)
                                     .getBody();
+
                             String email = claims.get("email", String.class);
                             String auths = claims.get("authorities", String.class);
+
                             var authorities = AuthorityUtils
-                                    .commaSeparatedStringToAuthorityList(auths == null ? "" : auths);
+                                    .commaSeparatedStringToAuthorityList(
+                                            auths == null ? "" : auths
+                                    );
                             Authentication user =
-                                    new UsernamePasswordAuthenticationToken(email, null, authorities);
+                                    new UsernamePasswordAuthenticationToken(
+                                            email,
+                                            null,
+                                            authorities
+                                    );
                             accessor.setUser(user);
-                        } catch (Exception ex) {
+                            System.out.println("STOMP user authenticated: " + email);
+
+                        } catch (Exception e) {
+                            System.out.println("Invalid STOMP JWT");
                             throw new IllegalArgumentException("Invalid STOMP JWT");
                         }
                     }

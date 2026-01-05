@@ -20,10 +20,11 @@ public interface IUserService {
     public User findUserById(Integer userId) throws UserException;
     public User findUserProfile(String token) throws UserException;
     public User findUserByUsername(String username) throws UserException;
-    public  String followUser(Integer reqUserId, Integer followUserId) throws UserException;
+    public User followUser(Integer reqUserId, Integer followUserId) throws UserException;
     public List<User> findUsersByIds(List<Integer> userId) throws UserException;
     public List<User> searchUsers(String query) throws UserException;
     public UserUpdateResponse updateUserDetails(Integer userReq, UserUpdateReq req) throws UserException;
+    public String removeAvt(Integer userId) throws UserException;
 
     public Page<UserFollowResponse> findFollowersOf(Integer id, Pageable pageable);
 
@@ -34,5 +35,6 @@ public interface IUserService {
     // hien thi so luong nguoi theo doi user {id}
 
     public Map<String, Long> getFollowCounts(Integer userId);
+    public List<User> findPopularUsers(Integer meId);
 
 }

@@ -12,7 +12,7 @@ public class CommentDTO {
     private String content;
     private LocalDateTime createdAt;
 
-    private Integer userId;
+    private UserMiniDTO userMiniDTO;
     private Integer postId;
     private Integer totalLikes;
     private boolean isLiked;
