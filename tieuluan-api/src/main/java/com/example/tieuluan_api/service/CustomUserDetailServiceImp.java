@@ -4,6 +4,7 @@ import com.example.tieuluan_api.entity.User;
 import com.example.tieuluan_api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,8 +23,8 @@ public class CustomUserDetailServiceImp implements UserDetailsService {
         Optional<User> opt = userRepository.findByEmail(username);
         if(opt.isPresent()){
             User user = opt.get();
-            List<GrantedAuthority> authorities = new ArrayList<>();
-
+            String role =user.getRole().getRole();
+            List<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(role);
             return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
         }
         throw new UsernameNotFoundException("User not found with username: "+ username);

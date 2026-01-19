@@ -1,5 +1,6 @@
 package com.example.tieuluan_api.mapper;
 
+import com.example.tieuluan_api.dto.RoleDTO;
 import com.example.tieuluan_api.dto.UserDTO;
 import com.example.tieuluan_api.dto.UserMessageDTO;
 import com.example.tieuluan_api.dto.UserMiniDTO;
@@ -112,6 +113,11 @@ public interface UserMapper {
                     .anyMatch(id -> id.equals(reqUser.getId()));
         }
         dto.setFollowed(isFollowed);
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setId(user.getRole().getId());
+        roleDTO.setRole(user.getRole().getRole());
+
+        dto.setRole(roleDTO);
 
         return dto;
     }

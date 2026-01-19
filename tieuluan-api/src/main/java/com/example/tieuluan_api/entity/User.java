@@ -67,6 +67,9 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "post_id")
     )
     private List<Post> savePost = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "role_id", referencedColumnName = "id")
+    private Role role;
 
 
 //    public boolean follow(User target) {

@@ -2,19 +2,17 @@ package com.example.tieuluan_api.controller;
 
 import com.example.tieuluan_api.config.JwtProvider;
 import com.example.tieuluan_api.dto.UserDTO;
-import com.example.tieuluan_api.dto.request.UserCreateReq;
 import com.example.tieuluan_api.dto.response.AuthResponse;
-import com.example.tieuluan_api.dto.response.UserCreateResponse;
+import com.example.tieuluan_api.entity.Role;
 import com.example.tieuluan_api.entity.User;
 import com.example.tieuluan_api.exception.UserException;
 import com.example.tieuluan_api.mapper.UserMapper;
+import com.example.tieuluan_api.repository.RoleRepository;
 import com.example.tieuluan_api.repository.UserRepository;
 import com.example.tieuluan_api.service.CustomUserDetailServiceImp;
-import com.example.tieuluan_api.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,9 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -42,37 +38,49 @@ public class AuthController {
     private JwtProvider jwtProvider;
     @Autowired
     private CustomUserDetailServiceImp customUserDetailServiceImp;
+    @Autowired
+    private RoleRepository roleRepository;
 
     @PostMapping("/signup")
     public ResponseEntity<UserDTO> registerUser(@RequestBody User req) throws UserException {
+
         if (req.getEmail() == null || req.getPassword() == null || req.getFullname() == null) {
-            throw new UserException("All filds are required");
+            throw new UserException("All fields are required");
         }
 
-        Optional<User> isEmailExist = userRepository.findByEmail(req.getEmail());
-        if (isEmailExist.isPresent()) {
-            throw new UserException("Email Is Arlready Exist");
-        }
-        Optional<User> isUsernameExist = userRepository.findByUsername(req.getUsername());
-        if (isUsernameExist.isPresent()) {
-            throw new UserException("Username Is Arlready Taken...");
-        }
-        if (req.getEmail() == null || req.getPassword() == null || req.getFullname() == null) {
-            throw new UserException("All filds are required");
+        if (userRepository.findByEmail(req.getEmail()).isPresent()) {
+            throw new UserException("Email already exists");
         }
 
-        User newUser = req;
-        UserDTO userDTO = UserMapper.toUserDTO(req,req);
+        if (userRepository.findByUsername(req.getUsername()).isPresent()) {
+            throw new UserException("Username already taken");
+        }
+
+        User newUser = new User();
+        newUser.setUsername(req.getUsername());
+        newUser.setEmail(req.getEmail());
+        newUser.setFullname(req.getFullname());
         newUser.setPassword(passwordEncoder.encode(req.getPassword()));
-        userRepository.save(newUser);
-        //Create auth spring security first and send it to SecurityContextHolder to handle it.
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        Authentication auth = new UsernamePasswordAuthenticationToken(newUser.getEmail(), req.getPassword(), authorities);
-        SecurityContextHolder.getContext().setAuthentication(auth);
-        //Create jwt token and send back to client
-        String token = jwtProvider.generateToken(auth);
 
-        AuthResponse authResponse = new AuthResponse(token, true);
+        Role userRole = roleRepository.findByRole("ROLE_USER")
+                .orElseThrow(() -> new RuntimeException("ROLE_USER not found"));
+
+        newUser.setRole(userRole);
+
+        User savedUser = userRepository.save(newUser);
+
+        UserDTO userDTO = UserMapper.toUserDTO(savedUser, savedUser);
+
+        // Spring Security auth
+        List<GrantedAuthority> authorities =
+                AuthorityUtils.createAuthorityList(userRole.getRole());
+
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                savedUser.getEmail(),
+                null,
+                authorities
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
         return new ResponseEntity<>(userDTO, HttpStatus.CREATED);
     }
