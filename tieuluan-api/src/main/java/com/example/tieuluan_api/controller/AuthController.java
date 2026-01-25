@@ -2,17 +2,21 @@ package com.example.tieuluan_api.controller;
 
 import com.example.tieuluan_api.config.JwtProvider;
 import com.example.tieuluan_api.dto.UserDTO;
+import com.example.tieuluan_api.dto.request.VerifyCodeRequest;
 import com.example.tieuluan_api.dto.response.AuthResponse;
 import com.example.tieuluan_api.entity.Role;
 import com.example.tieuluan_api.entity.User;
+import com.example.tieuluan_api.entity.Verification;
 import com.example.tieuluan_api.exception.UserException;
 import com.example.tieuluan_api.mapper.UserMapper;
 import com.example.tieuluan_api.repository.RoleRepository;
 import com.example.tieuluan_api.repository.UserRepository;
 import com.example.tieuluan_api.service.CustomUserDetailServiceImp;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -40,6 +44,10 @@ public class AuthController {
     private CustomUserDetailServiceImp customUserDetailServiceImp;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private KafkaTemplate kafkaTemplate;
+    @Autowired
+    private KafkaProperties kafkaProperties;
 
     @PostMapping("/signup")
     public ResponseEntity<UserDTO> registerUser(@RequestBody User req) throws UserException {
@@ -66,7 +74,7 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("ROLE_USER not found"));
 
         newUser.setRole(userRole);
-
+        newUser.setVerification(new Verification());
         User savedUser = userRepository.save(newUser);
 
         UserDTO userDTO = UserMapper.toUserDTO(savedUser, savedUser);
@@ -116,17 +124,69 @@ public class AuthController {
 
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
-//    @PostMapping("/check-email")
-//    public ResponseEntity<Boolean> checkEmailExists(@RequestBody String email) {
-//        boolean res=checkEmail(email);
-//        return ResponseEntity.ok(res);
-//    }
-//    private boolean checkEmail(String email){
-//        boolean res = userRepository.findByEmail(email) != null;
-//        System.out.println("email: "+email );
-//        System.out.println("Res: "+res);
-//        return res;
-//    }
+    @PostMapping("/sendVerificationCode")
+    public ResponseEntity<String> sendVerificationCode(@RequestBody String email) throws UserException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserException("Email not found"));
+
+        String code = generateRandomCode();
+
+        Verification verification = user.getVerification();
+        if (verification == null) {
+            verification = new Verification();
+            user.setVerification(verification);
+        }
+        verification.setCode(code);
+
+        userRepository.save(user);
+
+        kafkaTemplate.send("verificationCodeTopic", email, code);
+
+        return new ResponseEntity<>("Code sent successfully", HttpStatus.OK);
+    }
+    @PostMapping("/check-email")
+    public ResponseEntity<Boolean> checkEmailExists(@RequestBody String email) {
+        boolean res=checkEmail(email);
+        return ResponseEntity.ok(res);
+    }
+
+    private String generateRandomCode() {
+        int code = (int) (Math.random() * 1000000);
+        // Format đảm bảo luôn có 6 chữ số (ví dụ: 001234)
+        return String.format("%06d", code);
+    }
+    @PostMapping("/sendNewPassword")
+    public ResponseEntity<String> sendNewPassword(@RequestBody VerifyCodeRequest req) throws UserException {
+        // 1. Tìm user
+        User user = userRepository.findByEmail(req.getEmail())
+                .orElseThrow(() -> new UserException("User not found"));
+
+        Verification verification = user.getVerification();
+
+        if (verification == null || verification.getCode() == null || !verification.getCode().equals(req.getCode())) {
+            return new ResponseEntity<>("Invalid or expired verification code", HttpStatus.BAD_REQUEST);
+        }
+
+        String newRandomPassword = generateRandomPassword();
+
+        user.setPassword(passwordEncoder.encode(newRandomPassword));
+
+        verification.setCode(null);
+        userRepository.save(user);
+
+        kafkaTemplate.send("newPasswordTopic", req.getEmail(), newRandomPassword);
+
+        return new ResponseEntity<>("New password has been sent to your email", HttpStatus.OK);
+    }
+    private String generateRandomPassword() {
+        return String.valueOf((int) (Math.random() * 100000000));
+    }
+    private boolean checkEmail(String email){
+        boolean res = userRepository.findByEmail(email) != null;
+        System.out.println("email: "+email );
+        System.out.println("Res: "+res);
+        return res;
+    }
 
 
 

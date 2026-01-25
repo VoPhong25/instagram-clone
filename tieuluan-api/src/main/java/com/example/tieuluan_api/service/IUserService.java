@@ -1,5 +1,6 @@
 package com.example.tieuluan_api.service;
 
+import com.example.tieuluan_api.dto.request.ChangePasswordRequest;
 import com.example.tieuluan_api.dto.request.UserCreateReq;
 import com.example.tieuluan_api.dto.request.UserUpdateReq;
 import com.example.tieuluan_api.dto.response.UserCreateResponse;
@@ -7,6 +8,7 @@ import com.example.tieuluan_api.dto.response.UserFollowResponse;
 import com.example.tieuluan_api.dto.response.UserUpdateResponse;
 import com.example.tieuluan_api.entity.User;
 import com.example.tieuluan_api.exception.UserException;
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -36,5 +38,6 @@ public interface IUserService {
 
     public Map<String, Long> getFollowCounts(Integer userId);
     public List<User> findPopularUsers(Integer meId);
+    public User changePassword(Integer userId, ChangePasswordRequest request) throws UserException, BadRequestException;
 
 }

@@ -118,6 +118,7 @@ public interface UserMapper {
         roleDTO.setRole(user.getRole().getRole());
 
         dto.setRole(roleDTO);
+        dto.setVerification(VerificationDTOMapper.toVerificationDTO(user.getVerification()));
 
         return dto;
     }

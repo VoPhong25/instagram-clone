@@ -1,6 +1,7 @@
 package com.example.tieuluan_api.controller;
 
 import com.example.tieuluan_api.dto.UserDTO;
+import com.example.tieuluan_api.dto.request.ChangePasswordRequest;
 import com.example.tieuluan_api.dto.request.UserUpdateReq;
 import com.example.tieuluan_api.dto.response.MessageResponse;
 import com.example.tieuluan_api.dto.response.UserFollowResponse;
@@ -11,6 +12,7 @@ import com.example.tieuluan_api.mapper.UserMapper;
 import com.example.tieuluan_api.service.IUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,7 +28,7 @@ import java.util.Set;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/user")
-public class UserController {
+public class  UserController {
     @Autowired
     private IUserService userService;
 
@@ -109,6 +111,13 @@ public class UserController {
         UserUpdateResponse res =
                 userService.updateUserDetails(user.getId(), req);
         return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+    @PutMapping("/password")
+    public ResponseEntity<UserDTO> changePassword(@RequestBody ChangePasswordRequest req, @RequestHeader("Authorization")String jwt) throws UserException, BadRequestException {
+        User reqUser= userService.findUserProfile(jwt);
+        User user= userService.changePassword(reqUser.getId(),req);
+        UserDTO userDTO= UserMapper.toUserDTO(user, user);
+        return new ResponseEntity<>(userDTO, HttpStatus.ACCEPTED);
     }
     @PutMapping("/account/removeAvt")
     public ResponseEntity<MessageResponse> removeAvtUser(@RequestHeader("Authorization") String token) throws UserException {

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,4 +54,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             @Param("meId") Integer meId,
             Pageable pageable
     );
+    @Query("SELECT COUNT(u) FROM User u JOIN u.savePost p")
+    long countTotalSavedPosts();
+    @Query("SELECT u FROM User u WHERE u.role.role <> 'ROLE_ADMIN'")
+    Page<User> findAllUsersNotAdmin(Pageable pageable);
+    public Long countByCreatedAtAfter(LocalDateTime startDate);
+    public List<User> findByFullnameContainingOrEmailContaining(String fullNameQuery, String emailQuery, Pageable pageable);
+    public Long countByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
 }

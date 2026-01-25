@@ -29,5 +29,6 @@ public class UserDTO {
     private List<PostMiniDTO> savePost = new ArrayList<>();
     private boolean isFollowed;//ReqUser is following this user or not
     private RoleDTO role;
+    private VerificationDTO verification;
     private LocalDateTime createdAt;
 }

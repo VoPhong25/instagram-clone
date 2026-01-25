@@ -59,6 +59,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Story> stories = new ArrayList<>();
+
     @OnDelete(action = OnDeleteAction.CASCADE)
     @ManyToMany
     @JoinTable(
@@ -67,6 +68,9 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "post_id")
     )
     private List<Post> savePost = new ArrayList<>();
+
+    @Embedded
+    private Verification verification;
     @ManyToOne
     @JoinColumn(name = "role_id", referencedColumnName = "id")
     private Role role;

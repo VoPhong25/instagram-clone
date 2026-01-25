@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Integer> {
 
@@ -24,5 +24,8 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             "(SELECT id FROM comment WHERE post_id = :postId)",
             nativeQuery = true)
     void deleteByPostId(@Param("postId") Integer postId);
+    long countByCreatedAtAfter(LocalDateTime startDate);
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+    List<Post> findByCreatedAtAfter(LocalDateTime start);
 
 }

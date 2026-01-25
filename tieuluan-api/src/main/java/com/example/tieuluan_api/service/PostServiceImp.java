@@ -8,6 +8,8 @@ import com.example.tieuluan_api.exception.UserException;
 import com.example.tieuluan_api.repository.LikeRepository;
 import com.example.tieuluan_api.repository.PostRepository;
 import com.example.tieuluan_api.repository.UserRepository;
+import com.example.tieuluan_api.service.notificationService.INotificationService;
+import com.example.tieuluan_api.service.notificationService.NotificationType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,8 @@ public class PostServiceImp implements IPostService{
     private UserRepository userRepository;
     @Autowired
     private LikeRepository likeRepository;
+    @Autowired
+    private INotificationService notificationService;
     @Override
     public Post createPost(Post req, Integer userId) throws UserException {
         User user = userService.findUserById(userId);
@@ -116,16 +120,15 @@ public class PostServiceImp implements IPostService{
             // unlike
             likeRepository.delete(existingLike.get());
             post.getLikes().remove(existingLike.get());
-        } else {
+        }  {
             // like mới
             Like newLike = new Like();
             newLike.setUser(user);
             newLike.setPost(post);
             newLike.setCreatedAt(LocalDateTime.now());
             likeRepository.save(newLike);
-
-            // thêm vào collection của post
             post.getLikes().add(newLike);
+            notificationService.sendNotification(NotificationType.LIKE, user,post.getUser(),post);
         }
         postRepository.save(post);
 

@@ -2,6 +2,7 @@ package com.example.tieuluan_api.service;
 
 
 import com.example.tieuluan_api.config.JwtProvider;
+import com.example.tieuluan_api.dto.request.ChangePasswordRequest;
 import com.example.tieuluan_api.dto.request.UserUpdateReq;
 import com.example.tieuluan_api.dto.response.UserFollowResponse;
 import com.example.tieuluan_api.dto.response.UserUpdateResponse;
@@ -9,10 +10,14 @@ import com.example.tieuluan_api.entity.User;
 import com.example.tieuluan_api.exception.UserException;
 import com.example.tieuluan_api.mapper.UserMapper;
 import com.example.tieuluan_api.repository.UserRepository;
+import com.example.tieuluan_api.service.notificationService.INotificationService;
+import com.example.tieuluan_api.service.notificationService.NotificationType;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +32,11 @@ class UserServiceImpl implements IUserService {
     private UserMapper userMapper;
     @Autowired
     private JwtProvider jwtProvider;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private INotificationService notificationService;
 
     @Override
     public User findUserById(Integer userId) throws UserException {
@@ -85,6 +95,7 @@ class UserServiceImpl implements IUserService {
             // neu chua follow thi follow
             me.getFollowing().add(target);
             target.getFollowers().add(me);
+            notificationService.sendNotification(NotificationType.FOLLOW, me,target,null);
             userRepository.save(me);
             userRepository.save(target);
 
@@ -170,6 +181,16 @@ class UserServiceImpl implements IUserService {
         );
 
         return users;
+    }
+    @Override
+    public User changePassword(Integer userId, ChangePasswordRequest request) throws UserException, BadRequestException {
+        User user= findUserById(userId);
+        if(!passwordEncoder.matches(request.getCurrentPassword(),user.getPassword())){
+            throw new BadRequestException("Current password is not correct");
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        return userRepository.save(user);
     }
 }
 

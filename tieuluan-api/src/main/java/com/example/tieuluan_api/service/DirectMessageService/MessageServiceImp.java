@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service;
         @Override
         public List<UserMessageDTO> listConversationPartners(User me) {
             List<DirectMessage> all = messageRepository.findBySenderOrRecipientOrderByCreatedAtDesc(me, me);
-            LinkedHashSet<UserMessageDTO> partners = new LinkedHashSet<>(); //use linkedHashSet to ensure that all partner in order and unique
+            LinkedHashSet<UserMessageDTO> partners = new LinkedHashSet<>();
             for (DirectMessage m : all) {
                 UserMessageDTO other = m.getSender().equals(me)
                         ? UserMapper.toUserMessageDTO(m.getRecipient(), me)
