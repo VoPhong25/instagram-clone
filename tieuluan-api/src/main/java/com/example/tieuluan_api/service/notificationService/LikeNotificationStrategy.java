@@ -27,9 +27,7 @@ public class LikeNotificationStrategy implements NotificationStrategy {
         notification.setType(NotificationType.LIKE);
         notification.setSender(sender);
         notification.setRecipient(recipient);
-        String fullName= sender.getFullname().replace(" ", "_")+ sender.getId();
-        System.out.println("fullname: "+ fullName);
-        String content=fullName+" liked your post";
+        String content=" liked your post";
         notification.setContent(content);
         notification.setPost(post);
         notification.setCreatedAt(LocalDateTime.now());

@@ -95,6 +95,7 @@ public class PostServiceImp implements IPostService{
             post.getSavedByUsers().add(user);
             postRepository.save(post);
             userRepository.save(user);
+            notificationService.sendNotification(NotificationType.SAVE, user,post.getUser(), post);
             return "Post Saved Successfully";
             //neu saved thi xoa
         }else{

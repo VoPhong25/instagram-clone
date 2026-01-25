@@ -19,11 +19,15 @@ public class NotificationKafkaConsumer {
             this.messagingTemplate = messagingTemplate;
         }
 
-        @KafkaListener(topics = "notification", groupId = "notification-group")
-        public void consumeNotification(NotificationDTO notificationDTO) {
+    @KafkaListener(topics = "notification", groupId = "notification-group")
+    public void consumeNotification(NotificationDTO notificationDTO) {
+        String recipientEmail = notificationDTO.getRecipient().getEmail();
+        messagingTemplate.convertAndSendToUser(
+                recipientEmail,
+                "/queue/notification",
+                notificationDTO
+        );
 
-            messagingTemplate.convertAndSend("/topic/notifications", notificationDTO);
-            System.out.println("Đã gửi thông báo qua WebSocket: " + notificationDTO);
-
+        System.out.println("Đã đẩy thông báo tới: " + recipientEmail);
     }
 }

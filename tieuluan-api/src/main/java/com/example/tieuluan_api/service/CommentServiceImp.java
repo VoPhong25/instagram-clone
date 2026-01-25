@@ -8,6 +8,8 @@ import com.example.tieuluan_api.exception.PostException;
 import com.example.tieuluan_api.exception.UserException;
 import com.example.tieuluan_api.repository.CommentRepository;
 import com.example.tieuluan_api.repository.PostRepository;
+import com.example.tieuluan_api.service.notificationService.INotificationService;
+import com.example.tieuluan_api.service.notificationService.NotificationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +28,7 @@ public class CommentServiceImp implements ICommentService{
     @Autowired
     private IPostService postService;
     @Autowired
-    private PostRepository postRepository;
+    private INotificationService notificationService;
 
     @Override
     public Comment createComment(Comment req, Integer postId, Integer userId) throws UserException, PostException {
@@ -41,7 +43,7 @@ public class CommentServiceImp implements ICommentService{
         comment.setContent(req.getContent());
         comment.setPost(post);
         post.getComment().add(comment);
-
+        notificationService.sendNotification(NotificationType.COMMENT, user,post.getUser(), post);
         return commentRepository.save(comment);
     }
 

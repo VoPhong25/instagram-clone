@@ -95,10 +95,9 @@ class UserServiceImpl implements IUserService {
             // neu chua follow thi follow
             me.getFollowing().add(target);
             target.getFollowers().add(me);
-            notificationService.sendNotification(NotificationType.FOLLOW, me,target,null);
             userRepository.save(me);
             userRepository.save(target);
-
+            notificationService.sendNotification(NotificationType.FOLLOW, me,target,null);
             return target;
         }
     }

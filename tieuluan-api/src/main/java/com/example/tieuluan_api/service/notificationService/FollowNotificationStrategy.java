@@ -29,8 +29,7 @@ public class FollowNotificationStrategy implements NotificationStrategy {
         notification.setType(NotificationType.FOLLOW);
         notification.setSender(sender);
         notification.setRecipient(recipient);
-        String fullName= sender.getFullname().replace(" ", "_")+ sender.getId();
-        String content= fullName+" just followed you";
+        String content= " just followed you";
         notification.setContent(content);
         notification.setPost(post);
         notification.setCreatedAt(LocalDateTime.now());
