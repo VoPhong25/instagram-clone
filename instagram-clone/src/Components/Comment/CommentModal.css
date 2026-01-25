@@ -1,6 +1,9 @@
 .comment {
-    max-height: 45vh;
-    overflow-y: scroll;
+    
+  max-height: calc(65vh - 200px); /* trừ phần header + action */
+  overflow-y: auto;
+  padding-bottom: 220px; /* đúng bằng chiều cao khối tim + input */
+
 }
 
 .comment::-webkit-scrollbar{

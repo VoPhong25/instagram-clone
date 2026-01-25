@@ -5,8 +5,33 @@ import { AiFillHeart, AiOutlineHeart } from "react-icons/ai"
 import { FaRegComment } from "react-icons/fa"
 import { RiSendPlaneLine } from "react-icons/ri"
 import "./CommentModal.css"
+import { useEffect, useState } from "react"
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom"
+import { createCommentAction, findCommentAction } from "../../Redux/Comment/Action"
+import { findPostByIdAction } from "../../Redux/Post/Action"
+import { timeDifference } from "../../Config/Logic"
 
-const CommentModal = ({ onClose, isOpen, isSaved, isPostLiked, handlePostLike, handlePostSave }) => {
+const CommentModal = ({ onClose, isOpen, isSaved, isPostLiked, handlePostLike, handlePostSave
+
+}) => {
+  const [commentContent, setCommentContent] = useState();
+  const dispatch = useDispatch();
+  const token = localStorage.getItem("token");
+  const { postId } = useParams();
+  console.log("nene----", postId)
+  const {comment, post} = useSelector(store =>store);
+  console.log("post:  ", post )
+
+  useEffect(()=>{
+    const data={jwt: token,
+      postId
+    }
+    if(postId)
+      dispatch(findPostByIdAction(data))
+  }, [comment.createComment, postId, comment.likeComment, comment.deleteComment]
+  )
+
   return (
     <div>
       <Modal size={'6xl'} onClose={onClose} isOpen={isOpen} isCentered>
@@ -16,29 +41,30 @@ const CommentModal = ({ onClose, isOpen, isSaved, isPostLiked, handlePostLike, h
           <ModalBody>
             <div className="flex h-[65vh] ">
               <div className="w-[50%] flex flex-col justify-center">
-                <img className="max-h-full w-full" src="https://cdn.pixabay.com/photo/2018/09/24/14/00/roses-3700004_1280.jpg" alt="" />
+                <img className="max-h-full w-full" src={post.singlePost?.image} alt="" />
               </div>
-            
+
               <div className="w-[50%] pl-6 relative">
                 <div className="flex justify-between items-center py-2 ">
                   <div className="flex items-center">
                     <div>
-                      <img className="h-12 w-12 rounded-full" src="https://cdn.pixabay.com/photo/2025/08/13/15/30/elephant-9772462_1280.jpg" alt="" />
+                      <img className="h-12 w-12 rounded-full" src={post.singlePost?.user?.image || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"} alt="" />
                     </div>
                     <div className="ml-2">
-                      <p className="font-semibold">username</p>
-                      <p className="font-thin">location</p>
+                      <p className="font-semibold">{post.singlePost?.user?.username}</p>
+                      <p className="font-thin">{post.singlePost?.location}</p>
                     </div>
                   </div>
                   <BsThreeDots className="cursor-pointer" />
                 </div>
                 <hr />
                 <div className="comment">
-                  {[1, 1, 1, 1, 1, 1, 1, 1].map((item) => <CommentCard />)}
+                  {post.singlePost?.comments?.map((item) => 
+                  <CommentCard comment={item}/>)}
                 </div>
 
 
-                <div className="absolute bottom-0 inset-x-0 pl-6">
+                <div className="absolute bottom-0 inset-x-0 pl-6 bg-white">
                   <div className="flex justify-between items-center w-full py-4">
                     <div className="flex items-center space-x-4">
                       {isPostLiked ? <AiFillHeart className="text-2xl hover:opacity-50 cursor-pointer text-red-500" onClick={handlePostLike} /> : <AiOutlineHeart className="text-2xl hover:opacity-50 cursor-pointer" onClick={handlePostLike} />}
@@ -51,15 +77,31 @@ const CommentModal = ({ onClose, isOpen, isSaved, isPostLiked, handlePostLike, h
                   </div>
 
                   <div className="w-full ">
-                    <p className="font-semibold">100 likes</p>
-                    <p className="opacity-50 py-2 text-sm">1 day ago</p>
+                 { post.singlePost?.totalLike > 0 && <p className="font-semibold">{post.singlePost?.totalLike} likes</p>}
+                    <p className="opacity-50 py-2 text-sm">{timeDifference(post.singlePost?.createdAt)}</p>
                   </div>
-                  
-                    <div className="flex items-center w-full pb-3">
-                      <BsEmojiSmile />
-                      <input className="commentInput" type="text" placeholder="Add a comment..." />
-                    </div>
-                  
+
+                  <div className="flex items-center w-full pb-3">
+                    <BsEmojiSmile />
+                    <input
+                      className="commentInput"
+                      type="text"
+                      placeholder="Add a comment..."
+                      onChange={(e) => setCommentContent(e.target.value)}
+                      value={commentContent}
+                      onKeyPress={(e) =>  {
+                        if (e.key === "Enter") {
+                          const data =
+                          {
+                            postId, jwt: token, data: {content: commentContent}
+
+                          }
+                          dispatch(createCommentAction(data))
+                          setCommentContent("")
+                        }
+                      }} />
+                  </div>
+
                 </div>
               </div>
 
