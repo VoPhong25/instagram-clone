@@ -1,0 +1,2 @@
+export const CREATE_STORY="CREATE_STORY";
+export const GET_ALL_STORY="GET_ALL_STORY";
