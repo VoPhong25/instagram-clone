@@ -1,14 +1,14 @@
 import { useNavigate } from 'react-router-dom'
-const StoryCircle = () => {
+const StoryCircle = ({user}) => {
   const navigate=useNavigate()
   const handleNavigate=() => {
-    navigate("/story")
+    navigate(`/story/${user.id}`)
   }
 
   return (
     <div onClick={handleNavigate} className="cursor-pointer flex flex-col items-center">
-        <img className="w-16 h-16 rounded-full " src="https://cdn.pixabay.com/photo/2025/06/25/17/47/hiding-9680458_1280.jpg" alt="" />
-        <p>username</p>
+        <img className="w-16 h-16 rounded-full border-2 border-gray-300" src={user.image || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"} alt="" />
+        <p>{user.username}</p>
     </div>
   )
 }
