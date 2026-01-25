@@ -1,18 +1,29 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
-import { BrowserRouter } from 'react-router-dom'
-import { ChakraProvider } from '@chakra-ui/react'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+
+import { ChakraProvider } from "@chakra-ui/react";
+import { Provider } from "react-redux";
 
 
-createRoot(document.getElementById('root')).render(
+import App from "./App";
+import { store } from "./Redux/Store/Store";
+import { StompProvider } from "./WebSocket/WebSocket";
+
+import "./index.css";
+
+createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
-    
-   <ChakraProvider resetCSS={false}>
-      <App />
-    </ChakraProvider>
+      {/* Để resetCSS={false} ở đây để Chakra không đánh nhau với Tailwind */}
+      <ChakraProvider resetCSS={false}>
+        <Provider store={store}>
+          <StompProvider>
+             {/* XÓA ThemeProvider của MUI ở đây */}
+             <App />
+          </StompProvider>
+        </Provider>
+      </ChakraProvider>
     </BrowserRouter>
   </StrictMode>
-)
+);
