@@ -56,5 +56,5 @@ Project/
 Clone the main project and initialize all submodules in one command:
 
 ```bash
-git clone --recursive [https://github.com//.git](https://github.com/binhdtqxk/SocialX.git)
+git clone --recursive [https://github.com/VoPhong25/instagram-clone.git)
 cd SocialX
