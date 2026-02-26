@@ -48,6 +48,7 @@ This repository uses **Git Submodules** to manage the frontend and backend indep
 Project/
 ├── frontend/   # ReactJS client (Submodule)
 └── backend/    # Spring Boot API (Submodule)
+```
 
 ## ⚙️ Getting Started
 
