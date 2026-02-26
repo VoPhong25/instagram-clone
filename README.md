@@ -1,36 +1,69 @@
-**🐦 Real-Time Social Media Platform**
+🐦 SocialX - Real-Time Social Media Platform
+SocialX is a feature-rich, full-stack social media platform inspired by Instagram. Developed as a university capstone project, it focuses on seamless user interaction, real-time communication, and scalable architecture.
 
-Project is a full-stack social media platform inspired by Instagram, developed as a university capstone project. It supports user interaction, real-time messaging, notifications, post engagement, and administrative features.
+🚀 Tech Stack
+Component	Technologies
+Backend	Spring Boot, Apache Kafka, WebSocket, MySQL, JDK 22, GMail API
+Frontend	ReactJS, Redux, TailwindCSS, Material UI, Mapbox API, Cloudinary
+Security	JWT Authentication
+DevOps	Docker, Docker Compose, Vite
+✅ Key Features
+👤 User Management
+Authentication: Secure Register, Login, Forgot Password, and Change Password flows.
 
+Profiles: Customizable user profiles and public profile viewing.
 
-**🚀 Tech Stack**
+Social Graph: Follow and Unfollow system to build connections.
 
-Backend: Spring Boot · Apache Kafka · WebSocket · MySQL · JDK 22 · Docker· GMail API
-Frontend: ReactJS · Redux · TailwindCSS · Material UI · Map box API· Cloudinary
-Other Tools: Docker Compose · JWT Authentication · Vite
-**✅ Features**
-**👤 User System**
-Register / Login / Forgot Password / Change Password
-Edit profile, view other users’ profiles
-Follow / Unfollow users
-Lock / Unlock user accounts (Admin)
-**📝 Post System**
-Create, view, and like posts
-Comment on posts
-Repost / Undo repost
-**💬 Real-Time Features**
-Direct messaging using WebSocket
-Instant notifications (Kafka + WebSocket)
-View analytics and user statistics
-**📂 Project Structure**
-This repository includes both the frontend and backend as submodules:
+Admin Control: Dedicated features for administrators to Lock/Unlock user accounts.
 
- ├── frontend/ # ReactJS client └── backend/ # Spring Boot API 
+📝 Content & Interaction
+Posts: Create, view, and like media-rich posts.
 
-Make sure to run git submodule update --init --recursive after cloning this repo to pull in the submodules.
+Engagement: Commenting system and "Repost/Undo Repost" functionality.
 
-**⚙️ Getting Started**
-**1️⃣ Clone with Submodules**
-git clone https://github.com/binhdtqxk/SocialX.git
+Location: Integration with Mapbox API for location-based features.
+
+💬 Real-Time Features
+Direct Messaging: Instant 1-on-1 chatting powered by WebSocket.
+
+Instant Notifications: Real-time alerts for likes and interactions using Apache Kafka and WebSocket.
+
+Analytics: Visual statistics and user engagement metrics.
+
+📂 Project Structure
+This repository uses Git Submodules to manage the frontend and backend independently:
+
+Bash
+SocialX/
+├── frontend/   # ReactJS client (Submodule)
+└── backend/    # Spring Boot API (Submodule)
+[!WARNING]
+
+Since this project uses submodules, a standard git clone will not download the source code for the frontend and backend folders automatically.
+
+⚙️ Getting Started
+1️⃣ Clone the Repository
+Clone the main project and initialize all submodules in one command:
+
+Bash
+git clone --recursive https://github.com/binhdtqxk/SocialX.git
 cd SocialX
+If you have already cloned the repo without submodules, run:
+
+Bash
 git submodule update --init --recursive
+2️⃣ Environment Configuration
+Backend: Navigate to backend/src/main/resources/ and update application.yml with your MySQL credentials, Gmail API keys, and Kafka broker address.
+
+Frontend: Create a .env file in the frontend/ directory for Cloudinary and Mapbox API keys.
+
+3️⃣ Run with Docker
+Start the required infrastructure (MySQL, Kafka, Zookeeper) easily:
+
+Bash
+docker-compose up -d
+🛠 Development Commands
+Run Backend: ./mvnw spring-boot:run (inside /backend)
+
+Run Frontend: npm run dev (inside /frontend)
