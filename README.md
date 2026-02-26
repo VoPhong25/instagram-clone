@@ -1,11 +1,11 @@
-# 🐦 SocialX - Real-Time Social Media Platform
+# 🐦 Real-Time Social Media Platform
 
 ![Project Status](https://img.shields.io/badge/Status-Capstone--Project-blue?style=for-the-badge)
 ![Java](https://img.shields.io/badge/Java-22-orange?style=for-the-badge&logo=openjdk)
 ![Spring Boot](https://img.shields.io/badge/Backend-Spring%20Boot%203-brightgreen?style=for-the-badge&logo=springboot)
 ![React](https://img.shields.io/badge/Frontend-ReactJS-61DAFB?style=for-the-badge&logo=react)
 
-**SocialX** is a feature-rich, full-stack social media platform inspired by Instagram. Developed as a university capstone project, it focuses on seamless user interaction, real-time communication, and scalable architecture.
+**Project** is a feature-rich, full-stack social media platform inspired by Instagram. Developed as a university capstone project, it focuses on seamless user interaction, real-time communication, and scalable architecture.
 
 ---
 
@@ -45,6 +45,15 @@
 This repository uses **Git Submodules** to manage the frontend and backend independently:
 
 ```bash
-SocialX/
+Project/
 ├── frontend/   # ReactJS client (Submodule)
 └── backend/    # Spring Boot API (Submodule)
+
+## ⚙️ Getting Started
+
+### 1️⃣ Clone the Repository
+Clone the main project and initialize all submodules in one command:
+
+```bash
+git clone --recursive [https://github.com//.git](https://github.com/binhdtqxk/SocialX.git)
+cd SocialX
