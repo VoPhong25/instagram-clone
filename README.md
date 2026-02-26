@@ -1,8 +1,10 @@
 **🐦 Real-Time Social Media Platform**
+
 Project is a full-stack social media platform inspired by Instagram, developed as a university capstone project. It supports user interaction, real-time messaging, notifications, post engagement, and administrative features.
 
 
 **🚀 Tech Stack**
+
 Backend: Spring Boot · Apache Kafka · WebSocket · MySQL · JDK 22 · Docker· GMail API
 Frontend: ReactJS · Redux · TailwindCSS · Material UI · Map box API· Cloudinary
 Other Tools: Docker Compose · JWT Authentication · Vite
